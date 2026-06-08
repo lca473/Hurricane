@@ -255,7 +255,7 @@ body::after{content:'';position:fixed;inset:0;background:rgba(180,220,255,.08);a
 .account-chip:hover{border-color:var(--cyan-border);color:var(--text);}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);flex-shrink:0;}
 .dot.off{background:var(--text-dim);}
-.sync-state{font-size:11px;color:var(--text-dim);text-align:right;min-height:16px;margin-top:4px;}
+
 /* ════════════ INTERACTIVE LESSON RUNNER ════════════ */
 .he{font-family:var(--mono);color:var(--cyan);font-weight:500;}
 
@@ -393,7 +393,7 @@ body::after{content:'';position:fixed;inset:0;background:rgba(180,220,255,.08);a
         <span id="accountLabel">Sign in to sync</span>
       </button>
     </div>
-    <div class="sync-state" id="syncState"></div>
+
   </div>
   <div class="wrap">
     <div class="stat-row" id="homeStats"></div>
@@ -1448,10 +1448,7 @@ function fbKey(u){ return String(u).trim().toLowerCase().replace(/[.#$\/\[\]\s]+
 function keyFor(base){ return username ? base + "__" + fbKey(username) : base; }
 
 /* ── SYNC STATE DISPLAY ──────────────────────────────────────── */
-function setSyncState(txt){
-  const el = document.getElementById('syncState');
-  if(el) el.textContent = txt;
-}
+function setSyncState(txt){ /* removed */ }
 
 /* ── CLOUD SAVE ──────────────────────────────────────────────── */
 let cloudSaveTimer = null;
