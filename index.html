@@ -575,7 +575,7 @@ drills:[
 {type:'truefalse',q:'<span class="he">ä</span> spells the vowel sound in "day".',correct:'True',note:'Right — <span class="he">ä</span> = /eɪ/, as in day and they.'},
 {type:'choose',q:'How do you write the "ow" sound in "how"?',correct:'хaüх',opts:['хaüх','хaü','хö','хo'],heOpts:true,note:'aü makes the /aʊ/ glide, and a word ending in two vowels takes the silent х.'},
 {type:'choose',q:'Which is the long "oo" of "moon"?',correct:'ü',opts:['ü','ǔ','u','ö'],heOpts:true,note:'ü = /uː/. ǔ is the shorter "good / would" vowel.'},
-{type:'match',pairs:[['a','cat'],['e','bet'],['i','in'],['u','but']]}
+{type:'match',prompt:'Tap a vowel, then a word with that sound.',pairs:[['a','cat'],['e','bet'],['i','in'],['u','but']]}
 ]},
 
 /* ───────── 3 ───────── */
@@ -594,7 +594,7 @@ drills:[
 {type:'truefalse',q:'<span class="he">ð</span> and <span class="he">þ</span> spell the same sound.',correct:'False',note:'<span class="he">ð</span> is voiced TH (this); <span class="he">þ</span> is unvoiced TH (think).'},
 {type:'choose',q:'How is "ship" written?',correct:'шiп',opts:['шiп','чхiп','сiп','жiп'],heOpts:true},
 {type:'choose',q:'<span class="he">þëнк</span> means…',correct:'think',opts:['think','this','thank','thing'],note:'þ = unvoiced TH, as in think / three.'},
-{type:'match',pairs:[['ш','SH'],['чх','CH'],['ч','J'],['j','Y glide']]}
+{type:'match',prompt:'Tap a Hurricane letter, then the sound it spells.',pairs:[['ш','SH'],['чх','CH'],['ч','J'],['j','Y glide']]}
 ]},
 
 /* ───────── 4 ───────── */
@@ -1058,10 +1058,13 @@ function renderTrueFalse(d, qArea, checkBar){
 function renderMatch(d, qArea, checkBar){
   const left = d.pairs.map((p,i)=>({txt:p[0], id:i}));
   const right = d.pairs.map((p,i)=>({txt:p[1], id:i}));
-  shuffle(left); shuffle(right);
+  shuffle(left);
+  do { shuffle(right); }                 // reshuffle the right column until no
+  while (right.length > 1 &&             // row sits next to its own match
+         right.some((r,i) => r.id === left[i].id));
   qArea.innerHTML = `
     <div class="q-instr">Match the pairs</div>
-    <div class="q-prompt">Tap a Hurricane word, then its meaning.</div>
+    <div class="q-prompt">${d.prompt || 'Tap a Hurricane word, then its meaning.'}</div>
     <div class="match-grid" id="matchGrid"></div>`;
   const grid = document.getElementById('matchGrid');
   let html='';
