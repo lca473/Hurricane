@@ -314,7 +314,7 @@ body::after{content:'';position:fixed;inset:0;background:rgba(180,220,255,.08);a
 .teach-info-body i{color:var(--amber);font-style:normal;}
 
 /* sticky check / continue bar */
-.check-bar{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--bg) 22%);padding:18px 0 calc(18px + env(safe-area-inset-bottom));margin-top:22px;}
+.check-bar{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--bg) 22%);padding:18px 56px calc(18px + env(safe-area-inset-bottom)) 0;margin-top:22px;}
 .check-bar.feedback-correct,.check-bar.feedback-wrong{border-top:1.5px solid var(--line);background:var(--bg);}
 .check-bar.feedback-correct{border-top-color:var(--cyan-border);}
 .check-bar.feedback-wrong{border-top-color:var(--bad);}
@@ -1417,13 +1417,13 @@ function resetProgress(){
       Replace every line inside the curly braces.
 ════════════════════════════════════════════════════════════════ */
 const FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCvssu-9cczsItJ8zAbG6eqWhH-arTuhsM",
+  authDomain: "hurricane-678b6.firebaseapp.com",
+  databaseURL: "https://hurricane-678b6-default-rtdb.firebaseio.com",
+  projectId: "hurricane-678b6",
+  storageBucket: "hurricane-678b6.firebasestorage.app",
+  messagingSenderId: "161028955211",
+  appId: "1:161028955211:web:86a0ab84c9585c5c4981ce"
 };
 
 let db = null;
@@ -1442,7 +1442,9 @@ const SAVE_KEY  = "he_progress_v1";
 const LESSON_KEY= "he_lessons_v1";
 
 let username = "";
-function fbKey(u){ return String(u).replace(/[.#$\/\[\]]/g,"_"); }
+// Canonical key for cloud + local storage. Lower-cased and whitespace-collapsed
+// so "Neal", "neal" and " neal " on different devices all resolve to ONE account.
+function fbKey(u){ return String(u).trim().toLowerCase().replace(/[.#$\/\[\]\s]+/g,"_"); }
 function keyFor(base){ return username ? base + "__" + fbKey(username) : base; }
 
 /* ── SYNC STATE DISPLAY ──────────────────────────────────────── */
@@ -1468,6 +1470,20 @@ function cloudSave(){
     .catch(e=>{ console.warn("Firebase save error:", e); setSyncState("offline — saved locally"); });
   }, 600);
 }
+
+/* Immediate, non-debounced write. Used when the page is being hidden/closed so
+   the most recent lesson isn't lost while the 600ms debounce is still pending. */
+function cloudSaveNow(){
+  if(!firebaseReady || !db || !username) return;
+  clearTimeout(cloudSaveTimer);
+  try{
+    db.ref("users/"+fbKey(username)).update({
+      progress: progress, lessonsDone: lessonsDone, srs: srs, updatedAt: Date.now()
+    });
+  }catch(e){ console.warn("Firebase flush error:", e); }
+}
+window.addEventListener('pagehide', cloudSaveNow);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') cloudSaveNow(); });
 
 /* ── CLOUD PULL ──────────────────────────────────────────────── */
 async function cloudPull(user){
@@ -1534,6 +1550,9 @@ async function finishLogin(name){
   if(cloud){ mergeCloud(cloud); }
   srsBackfill();
   cloudSave();
+  if(!firebaseReady){
+    setSyncState("⚠ cloud sync off — add your Firebase keys to sync across devices");
+  }
   const btn = document.getElementById('loginBtn');
   if(btn){ btn.disabled = false; btn.textContent = "Continue"; }
   enterApp();
@@ -1625,7 +1644,7 @@ window.addEventListener('DOMContentLoaded',init);
   /* discreet circular icon; expands to a labelled pill on hover */
   #heFlagFab{
     position:fixed; right:16px;
-    bottom:calc(20px + env(safe-area-inset-bottom));
+    bottom:calc(14px + env(safe-area-inset-bottom));
     z-index:1000; height:48px; width:48px; padding:0;
     display:flex; align-items:center; justify-content:flex-start;
     border-radius:999px; cursor:pointer; overflow:hidden; white-space:nowrap;
@@ -1648,8 +1667,9 @@ window.addEventListener('DOMContentLoaded',init);
     box-shadow:0 8px 24px rgba(77,216,247,.5); transform:translateY(-1px);
   }
   #heFlagFab:hover .label, #heFlagFab:focus-visible .label{ opacity:1; transform:translateX(0); }
-  /* during a lesson, lift it above the sticky check bar */
-  #heFlagFab.on-runner{ bottom:calc(92px + env(safe-area-inset-bottom)); }
+  /* During a lesson the FAB stays in the bottom-right corner; the sticky
+     check bar reserves space on its right (see .check-bar padding) so the
+     Continue button never sits underneath the icon. */
 
   #heFlagOverlay{
     position:fixed; inset:0; z-index:10000; display:none;
